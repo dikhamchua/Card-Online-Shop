@@ -1,0 +1,509 @@
+userOrder.jsp: (view/payment)
+"<%@ page contentType="text/html" pageEncoding="UTF-8"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@ page import="entity.Orders" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="">
+        <meta name="author" content="">
+
+        <title>Lịch sử mua hàng</title>
+
+        <!-- Custom fonts for this template-->
+        <link href="${pageContext.request.contextPath}/assets/css/vendor/all.min.css" rel="stylesheet" type="text/css">
+
+        <!-- Page level plugin CSS-->
+        <link href="${pageContext.request.contextPath}/assets/css/vendor/dataTables.bootstrap4.css" rel="stylesheet">
+
+        <!-- Custom styles for this template-->
+        <link href="${pageContext.request.contextPath}/assets/css/sb-admin.css" rel="stylesheet">
+        <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/colReorder-bootstrap4.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+        <link rel="icon" href="${pageContext.request.contextPath}/assets/img/logo/logo100.jpg" sizes="32x32">
+
+        <style>
+            table {
+                width: 100%;
+                margin: auto;
+                text-align: center;
+                border-collapse: collapse;
+            }
+            th, td {
+                padding: 10px;
+                border: 1px solid #ddd;
+            }
+        </style>
+
+    </head>
+
+    <body id="page-top">
+        <!-- Header start  -->
+        <jsp:include page="../common/homepage/header.jsp"></jsp:include>
+
+            <!-- Orders section -->
+            <section class="gi-orders-section py-8 max-[767px]:py-6">
+                <div class="container mx-auto px-4">
+                    <h1 class="text-3xl font-semibold mb-6">Your Orders</h1>
+                    <div class="overflow-x-auto">
+                    <c:if test="${not empty userOrders}">
+                        <table border="1">
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Tổng tiền</th>
+                                    <th>Ngày mua</th>
+                                    <th>Xem chi tiết</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <c:forEach var="order" items="${userOrders}" varStatus="status">
+                                    <tr class="border-b">
+                                        <td class="py-3 px-6 text-sm text-gray-700">${status.index + 1}</td>
+                                        <td class="py-3 px-6 text-sm text-gray-700">${order.totalMoney}</td>
+                                        <td class="py-3 px-6 text-sm text-gray-700">
+                                            <fmt:parseDate value="${order.createdAt}" pattern="yyyy-MM-dd'T'HH:mm:ss" var="parsedDate" type="both" />
+                                            <fmt:formatDate value="${parsedDate}" pattern="dd/MM/yyyy HH:mm:ss" />
+                                        </td>
+                                        <td class="py-3 px-6 text-sm text-gray-700">
+                                            <button class="text-blue-600" onclick="showOrderDetails('${status.index + 1}', '${order.totalMoney}', '<fmt:formatDate value="${parsedDate}" pattern="dd/MM/yyyy HH:mm:ss" />')">Chi tiết</button>
+                                        </td>
+                                    </tr>
+                                </c:forEach>
+                            </tbody>
+                        </table>
+                    </c:if>
+                    <c:if test="${empty userOrders}">
+                        <p>No orders found.</p>
+                    </c:if>
+                </div>
+
+                <c:if test="${totalPages > 1}">
+                    <nav class="mt-6" aria-label="Page navigation">
+                        <ul class="pagination flex justify-center">
+                            <li class="page-item ${currentPage == 1 ? 'disabled' : ''}">
+                                <a class="page-link px-3 py-2 mx-1 rounded border ${currentPage == 1 ? 'text-gray-400 border-gray-300' : 'text-blue-600 border-blue-600'}" href="?page=${currentPage - 1}" aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                            <c:forEach var="i" begin="1" end="${totalPages}">
+                                <li class="page-item ${currentPage == i ? 'active' : ''}">
+                                    <a class="page-link px-3 py-2 mx-1 rounded border ${currentPage == i ? 'bg-blue-600 text-white border-blue-600' : 'text-blue-600 border-blue-600'}" href="?page=${i}">${i}</a>
+                                </li>
+                            </c:forEach>
+                            <li class="page-item ${currentPage == totalPages ? 'disabled' : ''}">
+                                <a class="page-link px-3 py-2 mx-1 rounded border ${currentPage == totalPages ? 'text-gray-400 border-gray-300' : 'text-blue-600 border-blue-600'}" href="?page=${currentPage + 1}" aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </c:if>
+            </div>
+        </section>
+
+        <!-- Order Details Modal -->
+        <div id="orderDetailsModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full" style="z-index: 1000;">
+            <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                <div class="mt-3 text-center">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900">Order Details</h3>
+                    <div class="mt-2">
+                        <p class="text-sm text-gray-500">Order Number: <span id="modalOrderNumber"></span></p>
+                        <p class="text-sm text-gray-500">Total Money: <span id="modalTotalMoney"></span></p>
+                        <p class="text-sm text-gray-500">Order Date: <span id="modalOrderDate"></span></p>
+                    </div>
+                    <div class="items-center px-4 py-3">
+                        <button id="closeModalButton" class="px-4 py-2 bg-blue-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Start -->
+        <jsp:include page="../common/homepage/footer.jsp"></jsp:include>
+
+            <!-- Plugins JS -->
+            <script src="${pageContext.request.contextPath}/assets/js/plugins/jquery-3.7.1.min.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/js/plugins/popper.min.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/js/plugins/swiper-bundle.min.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/js/plugins/fontawesome.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/js/plugins/owl.carousel.min.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/js/plugins/countdownTimer.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/js/plugins/infiniteslidev2.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/js/plugins/jquery.zoom.min.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/js/plugins/slick.min.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/js/plugins/nouislider.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/js/plugins/wow.js"></script>
+
+        <!-- Tailwindcss -->
+        <script src="https://cdn.tailwindcss.com"></script>
+
+        <!-- Main Js -->
+        <script src="${pageContext.request.contextPath}/assets/js/main.js"></script>
+        <script src="${pageContext.request.contextPath}/assets/js/demo-1.js"></script>
+
+        <script>
+                                                function showOrderDetails(orderNumber, totalMoney, orderDate) {
+                                                    document.getElementById('modalOrderNumber').innerText = orderNumber;
+                                                    document.getElementById('modalTotalMoney').innerText = totalMoney;
+                                                    document.getElementById('modalOrderDate').innerText = orderDate;
+                                                    document.getElementById('orderDetailsModal').classList.remove('hidden');
+                                                }
+
+                                                document.getElementById('closeModalButton').addEventListener('click', function () {
+                                                    document.getElementById('orderDetailsModal').classList.add('hidden');
+                                                });
+        </script>
+
+    </body>
+
+</html>
+"
+
+UserOrdersServlet.java: (controller.user)
+"package controller.user;
+
+import dal.implement.CardType_PriceDAO;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import dal.implement.*;
+import entity.*;
+import jakarta.servlet.http.HttpSession;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Locale;
+
+@WebServlet(name = "UserOrdersServlet", urlPatterns = {"/UserOrdersServlet"})
+public class UserOrdersServlet extends HttpServlet {
+
+    private static final int PAGE_SIZE = 10; // Number of orders per page
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        HttpSession session = request.getSession();
+        Users user = (Users) session.getAttribute("users");
+
+        if (user == null) {
+            response.sendRedirect("login.jsp");
+            return;
+        }
+
+        int pageNumber = 1;
+        if (request.getParameter("page") != null) {
+            pageNumber = Integer.parseInt(request.getParameter("page"));
+        }
+
+        OrdersDAO ordersDAO = new OrdersDAO();
+        int totalOrders = ordersDAO.countOrdersByUserID(user.getID());
+        int totalPages = (int) Math.ceil((double) totalOrders / PAGE_SIZE);
+        List<Orders> userOrders = ordersDAO.findOrdersByUserIDWithPagination(user.getID(), pageNumber, PAGE_SIZE);
+
+        request.setAttribute("userOrders", userOrders);
+        request.setAttribute("currentPage", pageNumber);
+        request.setAttribute("totalPages", totalPages);
+        request.getRequestDispatcher("view/payment/userOrder.jsp").forward(request, response);
+    }
+
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        HttpSession session = request.getSession();
+        Cart cart = (Cart) session.getAttribute("cart");
+        List<Cart_Item> listCart_Item = (List<Cart_Item>) session.getAttribute("listCart_Item");
+        CardType_PriceDAO cardTypePriceDAO = new CardType_PriceDAO();
+        OrdersDAO ordersDAO = new OrdersDAO();
+        PriceDAO priceDAO = new PriceDAO();
+        Orders order = new Orders();
+        Users user = (Users) session.getAttribute("user");
+        if (listCart_Item != null && !listCart_Item.isEmpty()) {
+            Orders orders = new Orders();
+            order.setUserID(user.getID());
+            orders.setCreatedAt(LocalDateTime.now());
+            float totalMoney = 0f;
+            for (Cart_Item cartItem : cart.getListCart_Item()) {
+                List<CardType_Price> prices = cardTypePriceDAO.findByNameOrIdOrPrice(String.valueOf(cartItem.getCardID()));
+                if (prices != null && !prices.isEmpty()) {
+                    Price price = priceDAO.findById(prices.get(0).getPriceID());
+                    if (price != null) {
+                        totalMoney += cartItem.getQuantity() * price.getPrice();
+                    }
+                }
+            }
+            orders.setTotalMoney(totalMoney);
+            ordersDAO.insertOrder(order);
+            response.sendRedirect("view/payment/userOrder.jsp");
+        } else {
+            response.sendRedirect("cart.jsp");
+        }
+    }
+    
+    public static void main(String[] args) {
+        OrdersDAO ordersDAO = new OrdersDAO();
+        List<Orders> userOrders = ordersDAO.findOrderByUserID(18);
+        System.out.println(userOrders);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss", Locale.US);
+
+        String strLocalDate = "2015-10-23T03:34:40";
+
+        LocalDateTime localDate = LocalDateTime.parse(strLocalDate, formatter);
+
+        System.out.println(localDate);
+        System.out.println(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss").format(localDate));
+    }
+}
+"
+
+OrdersDAO.java: (dal.implement)
+"package dal.implement;
+
+import jakarta.servlet.annotation.WebServlet;
+import dal.GenericDAO;
+import dal.DBContext;
+import entity.Orders;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+
+@WebServlet(name = "OrdersDAO", urlPatterns = {"/OrdersDAO"})
+public class OrdersDAO extends GenericDAO<Orders> {
+
+    Connection conn = null;
+    PreparedStatement ps = null;
+
+    @Override
+    public List<Orders> findAll() {
+        return queryGenericDAO(Orders.class);
+    }
+
+    public static void main(String[] args) {
+        for (Orders order : new OrdersDAO().findAll()) {
+            System.out.println(order);
+        }
+    }
+
+    @Override
+    public int insert(Orders order) {
+        String sql = "INSERT INTO sold_card_system3.orders ("
+                + "CardID, "
+                + "UserID, "
+                + "TotalMoney, "
+                + "CreatedAt, "
+                + "UpdatedAt, "
+                + "CreatedBy, "
+                + "IsDelete, "
+                + "DeletedBy, "
+                + "DeletedAt) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        LinkedHashMap<String, Object> parameterMap = new LinkedHashMap<>();
+        parameterMap.put("UserID", order.getUserID());
+        parameterMap.put("TotalMoney", order.getTotalMoney());
+        parameterMap.put("CreatedAt", order.getCreatedAt() != null ? Timestamp.valueOf(order.getCreatedAt()) : Timestamp.valueOf(LocalDateTime.now()));
+        parameterMap.put("UpdatedAt", order.getUpdatedAt() != null ? Timestamp.valueOf(order.getUpdatedAt()) : Timestamp.valueOf(LocalDateTime.now()));
+        parameterMap.put("CreatedBy", order.getCreatedBy());
+        parameterMap.put("IsDelete", order.isIsDelete());
+        parameterMap.put("DeletedBy", order.getDeletedBy());
+        parameterMap.put("DeletedAt", order.getDeletedAt() != null ? Timestamp.valueOf(order.getDeletedAt()) : null);
+        return insertGenericDAO(sql, parameterMap);
+    }
+
+    public int insertOrder(Orders order) {
+        String sql = "INSERT INTO sold_card_system3.orders ("
+                + "CardID, "
+                + "UserID, "
+                + "TotalMoney, "
+                + "CreatedAt, "
+                + "UpdatedAt, "
+                + "CreatedBy, "
+                + "IsDelete, "
+                + "DeletedBy, "
+                + "DeletedAt) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        LinkedHashMap<String, Object> parameterMap = new LinkedHashMap<>();
+        parameterMap.put("UserID", order.getUserID());
+        parameterMap.put("TotalMoney", order.getTotalMoney());
+        parameterMap.put("CreatedAt", order.getCreatedAt() != null ? Timestamp.valueOf(order.getCreatedAt()) : Timestamp.valueOf(LocalDateTime.now()));
+        parameterMap.put("UpdatedAt", order.getUpdatedAt() != null ? Timestamp.valueOf(order.getUpdatedAt()) : Timestamp.valueOf(LocalDateTime.now()));
+        parameterMap.put("CreatedBy", order.getCreatedBy());
+        parameterMap.put("IsDelete", order.isIsDelete());
+        parameterMap.put("DeletedBy", order.getDeletedBy());
+        parameterMap.put("DeletedAt", order.getDeletedAt() != null ? Timestamp.valueOf(order.getDeletedAt()) : null);
+        return insertGenericDAO(sql, parameterMap);
+    }
+
+    public List<Orders> findOrderByUserID(int userID) {
+        List<Orders> orders = new ArrayList<>();
+        String sql = "SELECT * FROM sold_card_system3.orders WHERE UserID = ?";
+        DateTimeFormatter fm ; 
+
+        try {
+            conn = new DBContext().getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, userID);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                Orders order = Orders.builder()
+                        .ID(rs.getInt("ID"))
+                        .UserID(rs.getInt("UserID"))
+                        .TotalMoney(rs.getFloat("TotalMoney"))
+                        .CreatedAt(rs.getTimestamp("CreatedAt").toLocalDateTime())
+                        .UpdatedAt(rs.getTimestamp("UpdatedAt").toLocalDateTime())
+                        .CreatedBy(rs.getInt("CreatedBy"))
+                        .IsDelete(rs.getBoolean("IsDelete"))
+                        .DeletedBy(rs.getInt("DeletedBy"))
+                        .DeletedAt(rs.getTimestamp("DeletedAt") != null ? rs.getTimestamp("DeletedAt").toLocalDateTime() : null)
+                        .build();
+                orders.add(order);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            closeConnection();
+        }
+
+        return orders;
+    }
+
+    public List<Orders> findOrdersByUserIDWithPagination(int userID, int pageNumber, int pageSize) {
+        List<Orders> orders = new ArrayList<>();
+        String sql = "SELECT * FROM sold_card_system3.orders WHERE UserID = ? LIMIT ? OFFSET ?";
+
+        try {
+            conn = new DBContext().getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, userID);
+            ps.setInt(2, pageSize);
+            ps.setInt(3, (pageNumber - 1) * pageSize);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                Orders order = Orders.builder()
+                        .ID(rs.getInt("ID"))
+                        .UserID(rs.getInt("UserID"))
+                        .TotalMoney(rs.getFloat("TotalMoney"))
+                        .CreatedAt(rs.getTimestamp("CreatedAt").toLocalDateTime())
+                        .UpdatedAt(rs.getTimestamp("UpdatedAt").toLocalDateTime())
+                        .CreatedBy(rs.getInt("CreatedBy"))
+                        .IsDelete(rs.getBoolean("IsDelete"))
+                        .DeletedBy(rs.getInt("DeletedBy"))
+                        .DeletedAt(rs.getTimestamp("DeletedAt") != null ? rs.getTimestamp("DeletedAt").toLocalDateTime() : null)
+                        .build();
+                orders.add(order);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            closeConnection();
+        }
+
+        return orders;
+    }
+
+    public int countOrdersByUserID(int userID) {
+        String sql = "SELECT COUNT(*) FROM sold_card_system3.orders WHERE UserID = ?";
+        int count = 0;
+
+        try {
+            conn = new DBContext().getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, userID);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                count = rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            closeConnection();
+        }
+
+        return count;
+    }
+
+    public List<Orders> findOrderByID(int userID) {
+        List<Orders> orders = new ArrayList<>();
+        String sql = "SELECT * FROM sold_card_system3.orders WHERE ID = ?";
+
+        try {
+            conn = new DBContext().getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, userID);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                Orders order = Orders.builder()
+                        .ID(rs.getInt("ID"))
+                        .UserID(rs.getInt("UserID"))
+                        .TotalMoney(rs.getFloat("TotalMoney"))
+                        .CreatedAt(rs.getTimestamp("CreatedAt").toLocalDateTime())
+                        .UpdatedAt(rs.getTimestamp("UpdatedAt").toLocalDateTime())
+                        .CreatedBy(rs.getInt("CreatedBy"))
+                        .IsDelete(rs.getBoolean("IsDelete"))
+                        .DeletedBy(rs.getInt("DeletedBy"))
+                        .DeletedAt(rs.getTimestamp("DeletedAt") != null ? rs.getTimestamp("DeletedAt").toLocalDateTime() : null)
+                        .build();
+                orders.add(order);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            closeConnection();
+        }
+
+        return orders;
+    }
+}
+"
+
+Orders.java: (entity)
+"package entity;
+
+import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+
+@ToString
+@Builder
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
+public class Orders {
+    private int ID;
+    private int UserID;
+    private float TotalMoney;
+    private LocalDateTime CreatedAt;
+    private LocalDateTime UpdatedAt;
+    private int CreatedBy;
+    private boolean IsDelete;
+    private int DeletedBy;
+    private LocalDateTime DeletedAt;
+}	
+"

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project-private xmlns="http://www.netbeans.org/ns/project-private/1">
+    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
+    <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
+        <group>
+            <file>file:/E:/SU24/ISP391/done/ISP392_IS1804_G3_1/ISP392_WebBanThe/src/java/controller/admin/DashboardSliderServlet.java</file>
+            <file>file:/E:/SU24/ISP391/done/ISP392_IS1804_G3_1/ISP392_WebBanThe/web/view/admin/breadCumbNews.jsp</file>
+            <file>file:/E:/SU24/ISP391/done/ISP392_IS1804_G3_1/ISP392_WebBanThe/web/view/admin/editNews.jsp</file>
+            <file>file:/E:/SU24/ISP391/done/ISP392_IS1804_G3_1/ISP392_WebBanThe/src/java/entity/News.java</file>
+            <file>file:/E:/SU24/ISP391/done/ISP392_IS1804_G3_1/ISP392_WebBanThe/web/view/common/homepage/header.jsp</file>
+            <file>file:/E:/SU24/ISP391/done/ISP392_IS1804_G3_1/ISP392_WebBanThe/src/java/controller/homepage/SliderController.java</file>
+            <file>file:/E:/SU24/ISP391/done/ISP392_IS1804_G3_1/ISP392_WebBanThe/web/view/admin/editSlider.jsp</file>
+            <file>file:/E:/SU24/ISP391/done/ISP392_IS1804_G3_1/ISP392_WebBanThe/web/view/admin/breadCumbSlider.jsp</file>
+            <file>file:/E:/SU24/ISP391/done/ISP392_IS1804_G3_1/ISP392_WebBanThe/src/java/controller/admin/DashboardNewsServlet.java</file>
+            <file>file:/E:/SU24/ISP391/done/ISP392_IS1804_G3_1/ISP392_WebBanThe/src/java/dal/implement/SliderDAO.java</file>
+            <file>file:/E:/SU24/ISP391/done/ISP392_IS1804_G3_1/ISP392_WebBanThe/src/java/entity/Slider.java</file>
+            <file>file:/E:/SU24/ISP391/done/ISP392_IS1804_G3_1/ISP392_WebBanThe/web/view/homepage/newsDetail.jsp</file>
+            <file>file:/E:/SU24/ISP391/done/ISP392_IS1804_G3_1/ISP392_WebBanThe/src/java/controller/homepage/NewsDetailsController.java</file>
+            <file>file:/E:/SU24/ISP391/done/ISP392_IS1804_G3_1/ISP392_WebBanThe/web/view/homepage/news.jsp</file>
+            <file>file:/E:/SU24/ISP391/done/ISP392_IS1804_G3_1/ISP392_WebBanThe/web/view/admin/sideBar.jsp</file>
+            <file>file:/E:/SU24/ISP391/done/ISP392_IS1804_G3_1/ISP392_WebBanThe/src/java/dal/implement/NewsDAO.java</file>
+            <file>file:/E:/SU24/ISP391/done/ISP392_IS1804_G3_1/ISP392_WebBanThe/web/view/admin/dashboardSlider.jsp</file>
+            <file>file:/E:/SU24/ISP391/done/ISP392_IS1804_G3_1/ISP392_WebBanThe/web/view/homepage/home.jsp</file>
+            <file>file:/E:/SU24/ISP391/done/ISP392_IS1804_G3_1/ISP392_WebBanThe/web/view/admin/dashboardNews.jsp</file>
+        </group>
+    </open-files>
+</project-private>
